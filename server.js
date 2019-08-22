@@ -46,6 +46,18 @@ server.post("/api/register", async (req, res) => {
     });
 }})
 
+//get all users
+server.get("/api/users", async (req,res) => {
+  const users = await db.getUsers();
+
+  if (users){
+    res.status(200).json(users);
+  } else {
+    res.status(400).json({message: "Error retrieving list of users"})
+  }
+  
+})
+
 //custom middleware
 function logger(req, res, next) {
   console.log(
