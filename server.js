@@ -24,10 +24,14 @@ const bcrypt = require('bcryptjs');
 server.post("/api/register", async (req, res) => {
   const userInfo = req.body;
   // console.log(userInfo);
+
+  //generate the hash
   const hash = bcrypt.hashSync(userInfo.password, 13);
 
+  //set the userpassword to our new hashed value
   userInfo.password = hash;
   console.log(userInfo);
+  
   try {
     if(userInfo){
       const newUser = await db.addUser(userInfo);
@@ -45,6 +49,28 @@ server.post("/api/register", async (req, res) => {
       message: "Error"
     });
 }})
+
+//authenticate and log in existing user
+server.post("/api/login", (req, res) => {
+  //destructure username and password
+  let { username, password } = req.body;
+
+  //use findby method in model to username from req.body
+  db.findBy({ username })
+  .first()
+  .then(user => {
+    //compare the hashed password in the database against the incoming password
+    if (user && bcrypt.compareSync(password, user.password)) {
+      res.status(200).json({ message: `Welcome ${user.username}!` })
+    } else {
+      res.status(401).json({ message: `new phone who this` })
+    }
+  })
+  .catch(error => {
+    res.status(500).json(error)
+  })
+})
+
 
 //get all users
 server.get("/api/users", async (req,res) => {
