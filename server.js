@@ -2,6 +2,10 @@
 const express = require("express");
 const server = express();
 server.use(express.json());
+
+//use helmet
+const helmet = require('helmet')
+server.use(helmet());
 //use my middleware
 server.use(logger);
 //use my routes
@@ -73,7 +77,7 @@ server.post("/api/login", (req, res) => {
 
 
 //get all users
-server.get("/api/users", async (req,res) => {
+server.get("/api/users", verify, async (req,res) => {
   const users = await db.getUsers();
 
   if (users){
@@ -84,7 +88,7 @@ server.get("/api/users", async (req,res) => {
   
 })
 
-//custom middleware
+//logger middleware
 function logger(req, res, next) {
   console.log(
     `Method: ${req.method}, url: ${
@@ -92,6 +96,13 @@ function logger(req, res, next) {
     }, timestamp: [${new Date().toISOString()}]`
   );
   next();
+}
+
+//verification middleware
+//note: verification middleware should be in its own folder in ./auth/ directory
+
+function verify(req, res, next){
+
 }
 
 module.exports = server;
