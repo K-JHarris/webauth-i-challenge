@@ -76,6 +76,7 @@ server.post("/api/login", (req, res) => {
   .then(user => {
     //compare the hashed password in the database against the incoming password
     if (user && bcrypt.compareSync(password, user.password)) {
+      req.session.user = user; //saves the user information to the session in a cookie
       res.status(200).json({ message: `Welcome ${user.username}!` })
     } else {
       res.status(401).json({ message: `new phone who this` })
@@ -113,23 +114,10 @@ function logger(req, res, next) {
 //note: verification middleware should be in its own folder in ./auth/ directory
 
 function verify(req, res, next){
-  //get user information from headers
-  const { username,  password} = req.headers
   //use findby method in model to get username from req.body
-  if (username && password) {
-    db.findBy({ username })
-    .first()
-    .then(user => {
-      //compare the hashed password in the database against the incoming password
-      if (user && bcrypt.compareSync(password, user.password)) {
-        next(); //if condition is met call next function in stack
-      } else {
-        res.status(401).json({ message: `Invalid Credentials` })
-      }
-    })
-    .catch(error => {
-      res.status(500).json(error)
-})} else {
+  if (req.session && req.session.user) {
+   next();
+} else {
   res.status(400).json({ message: 'Please provide valid credentials'})
 }}
 
